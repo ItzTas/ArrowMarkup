@@ -3,9 +3,9 @@ package main
 import "fmt"
 
 func main() {
-	text := "This is a header <-<Header- shit"
+	text := "This is a header <-<Header-"
 
-	nodes, _ := parseArrow(text)
+	a, err := parseArrow(text)
 
-	fmt.Println(nodes)
+	fmt.Println(a, err)
 }
