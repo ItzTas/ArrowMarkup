@@ -2,83 +2,51 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
-	"strings"
+)
+
+const (
+	paragraph = "paragraph"
+)
+
+const (
+	errorOutOfRange = errors.New("text out of range")
 )
 
 type NodeAM struct {
 	text       string
 	tag        string
 	attributes map[string]string
-	isChild    bool
-	childs     []NodeAM
 }
 
-func parseArrow(arrowStr string) ([]NodeAM, error) {
-	re := regexp.MustCompile(`(<-[^>]*->|-[^-]*-)|([^<\-]+)`)
-	nodes := re.FindAllString(arrowStr, -1)
-	nodesAM := make([]NodeAM, 0, len(nodes))
-	for _, node := range nodes {
-		nodesAM = append(nodesAM, NodeAM{
-			text: node,
-		})
+type AMParser struct {
+	regex *regexp.Regexp
+}
+
+func NewAmParser() *AMParser {
+	return &AMParser{
+		regex: regexp.MustCompile(`(<-\w+-)|(-\w+->)|([^<>-]+)`),
+	}
+}
+
+func (p *AMParser) parseAM(str string) (NodeAM, error) {
+	texts := p.regex.FindAllString(str, -1)
+	if len(texts) == 0 {
+		return NodeAM{}, errors.New("invalid string")
+	}
+	if len(texts) == 1 {
+		return NodeAM{
+			text:       texts[0],
+			tag:        paragraph,
+			attributes: make(map[string]string),
+		}, nil
 	}
 
-	for i, nodeAM := range nodesAM {
-		if isNodeAMTag(nodeAM.text) {
-			insides := strings.Split(nodeAM.text, " ")
-
-			if nodeAM.text[:2] == "-<" {
-				tag := insides[0][2:]
-
-				if tag[len(tag)-1] == '-' {
-					tag = tag[:len(tag)-1]
-				}
-
-				if i == 0 {
-					return []NodeAM{}, errors.New("wrong usage of tag")
-				}
-				for j := i - 1; j >= 0; j-- {
-					if isNodeAMTag(nodesAM[j].text) {
-						if nodesAM[j].isChild {
-							nodesAM[i].childs = append(nodesAM[i].childs, nodesAM[j])
-						} else {
-							fmt.Println(nodesAM[j])
-							break
-						}
-					}
-					nodesAM[j].tag = tag
-				}
-
-			} else {
-				tag := insides[0][1:]
-				if tag[len(tag)-2:] == ">-" {
-					tag = tag[:len(tag)-2]
-				}
-
-				if i == len(nodesAM) {
-					return []NodeAM{}, errors.New("wrong usage of tag")
-				}
-
-				for j := i + 1; j < len(nodesAM); j++ {
-					if isNodeAMTag(nodesAM[j].text) {
-						if nodesAM[j].isChild {
-							nodesAM[i].childs = append(nodesAM[i].childs, nodesAM[j])
-						} else {
-							break
-						}
-					}
-					nodesAM[j].tag = tag
-				}
+	for i, t := range texts {
+		if t[0] == '-' && t[len(t)-2:] == "->" {
+			if i+1 > len(texts) {
+				return NodeAM{}, errorOutOfRange
 			}
 		}
 	}
-
-	return nodesAM, nil
-}
-
-func isNodeAMTag(str string) bool {
-	re := regexp.MustCompile(`^(-<\w+-|-[\w\s]+>-)$`)
-	return re.MatchString(str)
 }

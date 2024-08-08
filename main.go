@@ -1,11 +1,6 @@
 package main
 
-import "fmt"
-
 func main() {
-	text := "This is a header <-<Header-"
+	parser := NewAmParser()
 
-	a, err := parseArrow(text)
-
-	fmt.Println(a, err)
 }
