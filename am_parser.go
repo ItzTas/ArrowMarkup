@@ -3,13 +3,14 @@ package main
 import (
 	"errors"
 	"regexp"
+	"strings"
 )
 
 const (
 	paragraph = "paragraph"
 )
 
-const (
+var (
 	errorOutOfRange = errors.New("text out of range")
 )
 
@@ -44,9 +45,36 @@ func (p *AMParser) parseAM(str string) (NodeAM, error) {
 
 	for i, t := range texts {
 		if t[0] == '-' && t[len(t)-2:] == "->" {
-			if i+1 > len(texts) {
+			if i+1 == len(texts) {
 				return NodeAM{}, errorOutOfRange
 			}
+			tag := parseTag(t)[0]
+			return NodeAM{
+				text:       texts[i+1],
+				tag:        tag,
+				attributes: make(map[string]string),
+			}, nil
+		}
+		if t[:2] == "<-" {
+			if i-1 < 0 {
+				return NodeAM{}, errorOutOfRange
+			}
+			tag := parseTag(t)[0]
+			return NodeAM{
+				text:       texts[i-1],
+				tag:        tag,
+				attributes: make(map[string]string),
+			}, nil
 		}
 	}
+	return NodeAM{}, errors.New("unknwon error")
+}
+
+func parseTag(str string) []string {
+	if str[0] == '<' {
+		s := str[2 : len(str)-1]
+		return strings.Split(s, " ")
+	}
+	s := str[1 : len(str)-2]
+	return strings.Split(s, " ")
 }
