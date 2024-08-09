@@ -4,6 +4,8 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	"github.com/ItzTas/arrowmarkup/internal/models"
 )
 
 const (
@@ -11,14 +13,8 @@ const (
 )
 
 var (
-	errorOutOfRange = errors.New("text out of range")
+	errorOutOfRange = errors.New("Text out of range")
 )
-
-type NodeAM struct {
-	text       string
-	tag        string
-	attributes map[string]string
-}
 
 type AMParser struct {
 	regex *regexp.Regexp
@@ -30,44 +26,56 @@ func NewAmParser() *AMParser {
 	}
 }
 
-func (p *AMParser) parseAM(str string) (NodeAM, error) {
+func (p *AMParser) parseAM(str string) (models.NodeAM, error) {
+	str = strings.Trim(str, " ")
 	texts := p.regex.FindAllString(str, -1)
 	if len(texts) == 0 {
-		return NodeAM{}, errors.New("invalid string")
+		return models.NodeAM{}, errors.New("invalid string")
 	}
 	if len(texts) == 1 {
-		return NodeAM{
-			text:       texts[0],
-			tag:        paragraph,
-			attributes: make(map[string]string),
+		if p.isAM(texts[0]) {
+			return models.NodeAM{}, errorOutOfRange
+		}
+		return models.NodeAM{
+			Text:       texts[0],
+			Tag:        paragraph,
+			Attributes: make(map[string]string),
 		}, nil
 	}
 
 	for i, t := range texts {
-		if t[0] == '-' && t[len(t)-2:] == "->" {
+		if t[0] == '-' && t[len(t)-2:] == "->" && len(t) >= 3 {
 			if i+1 == len(texts) {
-				return NodeAM{}, errorOutOfRange
+				return models.NodeAM{}, errorOutOfRange
 			}
 			tag := parseTag(t)[0]
-			return NodeAM{
-				text:       texts[i+1],
-				tag:        tag,
-				attributes: make(map[string]string),
+			return models.NodeAM{
+				Text:       texts[i+1],
+				Tag:        tag,
+				Attributes: make(map[string]string),
 			}, nil
 		}
-		if t[:2] == "<-" {
+		if t[:2] == "<-" && len(t) >= 3 {
 			if i-1 < 0 {
-				return NodeAM{}, errorOutOfRange
+				return models.NodeAM{}, errorOutOfRange
 			}
 			tag := parseTag(t)[0]
-			return NodeAM{
-				text:       texts[i-1],
-				tag:        tag,
-				attributes: make(map[string]string),
+			return models.NodeAM{
+				Text:       texts[i-1],
+				Tag:        tag,
+				Attributes: make(map[string]string),
 			}, nil
 		}
 	}
-	return NodeAM{}, errors.New("unknwon error")
+	return models.NodeAM{
+		Text:       str,
+		Tag:        paragraph,
+		Attributes: make(map[string]string),
+	}, nil
+}
+
+func (p *AMParser) isAM(str string) bool {
+	return str == p.regex.FindString(str)
 }
 
 func parseTag(str string) []string {
