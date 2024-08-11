@@ -2,15 +2,12 @@ package main
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 )
 
-const (
-	paragraph = "paragraph"
-)
-
 var (
-	errorOutOfRange = errors.New("Text out of range")
+	errorOutOfRange = errors.New("text out of range")
 )
 
 func (p *AMParser) parseAM(str string) (NodeAM, error) {
@@ -34,20 +31,30 @@ func (p *AMParser) parseAM(str string) (NodeAM, error) {
 			if i+1 == len(texts) {
 				return NodeAM{}, errorOutOfRange
 			}
-			tag := parseTag(t)[0]
+			tag := parseTag(t)
+			attributes, err := getAtributes(t)
+			if err != nil {
+				return NodeAM{}, err
+			}
 			return NodeAM{
-				Text: strings.Trim(texts[i+1], " "),
-				Tag:  tag,
+				Text:       strings.Trim(texts[i+1], " "),
+				Tag:        tag,
+				Attributes: attributes,
 			}, nil
 		}
 		if t[:2] == "<-" && len(t) >= 3 {
 			if i-1 < 0 {
 				return NodeAM{}, errorOutOfRange
 			}
-			tag := parseTag(t)[0]
+			tag := parseTag(t)
+			attributes, err := getAtributes(t)
+			if err != nil {
+				return NodeAM{}, err
+			}
 			return NodeAM{
-				Text: strings.Trim(texts[i-1], " "),
-				Tag:  tag,
+				Text:       strings.Trim(texts[i-1], " "),
+				Tag:        tag,
+				Attributes: attributes,
 			}, nil
 		}
 	}
@@ -57,18 +64,33 @@ func (p *AMParser) parseAM(str string) (NodeAM, error) {
 	}, nil
 }
 
+func getAtributes(str string) (map[string]Attribute, error) {
+	str = strings.Trim(str, " ")
+	var s string
+	if str[0] == '<' {
+		s = str[2 : len(str)-1]
+		s = strings.Trim(s, " ")
+	} else {
+		s = str[1 : len(str)-2]
+		s = strings.Trim(s, " ")
+	}
+	regex := regexp.MustCompile(`\.(\w+)\.<([^>]+)>`)
+	toParse := regex.FindAllString(s, -1)
+	return parseAttributes(toParse)
+}
+
 func (p *AMParser) isAM(str string) bool {
 	return str == p.regex.FindString(str)
 }
 
-func parseTag(str string) []string {
+func parseTag(str string) string {
 	str = strings.Trim(str, " ")
 	if str[0] == '<' {
 		s := str[2 : len(str)-1]
 		s = strings.Trim(s, " ")
-		return strings.Split(s, " ")
+		return strings.Split(s, " ")[0]
 	}
 	s := str[1 : len(str)-2]
 	s = strings.Trim(s, " ")
-	return strings.Split(s, " ")
+	return strings.Split(s, " ")[0]
 }
