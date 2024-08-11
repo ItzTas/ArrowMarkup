@@ -2,6 +2,26 @@ package main
 
 import "regexp"
 
+type metaAttrTypes int
+
+const (
+	single metaAttrTypes = iota
+	list
+	mapping
+)
+
+var attributesWithSlices = map[string]struct{}{
+	"class": {},
+}
+
+var attributesWithSingleValue = map[string]struct{}{
+	"href": {},
+}
+
+const (
+	paragraph = "paragraph"
+)
+
 type NodeAM struct {
 	Text       string
 	Tag        string
@@ -13,6 +33,7 @@ type Attribute struct {
 	ValueAttr string
 	MappAtrr  map[string]string
 	ListAttr  []string
+	Metatype  metaAttrTypes
 }
 
 type AMParser struct {
