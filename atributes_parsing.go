@@ -8,27 +8,31 @@ import (
 )
 
 var (
-	errorNotExist = errors.New("given tag or atribute does not exists")
+	errorNotExist = errors.New("given attrybute type or atribute does not exists")
 )
 
 func parseAttribute(str string) (string, []string, error) {
 	tagre := regexp.MustCompile(`\.(.*?)\.`)
 	matches := tagre.FindAllString(str, 1)
 	if len(matches) == 0 {
-		return "", nil, errors.New("no tag provided")
+		return "", nil, errors.New("no attribute type provided")
 	}
-	tag := matches[0]
-	attrre := regexp.MustCompile(`<(.*?)>`)
+	attrType := matches[0]
+	attrType = strings.Trim(attrType, ". ")
+	if attrType == "" {
+		return "", nil, errorNotExist
+	}
 
+	attrre := regexp.MustCompile(`<(.*?)>`)
 	attributes := attrre.FindAllString(str, -1)
 	if len(attributes) == 0 {
 		return "", nil, errors.New("no attribute provided")
 	}
+
 	attr := strings.Trim(attributes[0], "< >")
 	attributes = strings.Split(attr, " ")
 
-	tag = strings.Trim(tag, ".")
-	return tag, attributes, nil
+	return attrType, attributes, nil
 }
 
 func parseAttributes(attributesStr []string) (map[string]Attribute, error) {
