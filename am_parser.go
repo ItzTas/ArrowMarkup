@@ -6,13 +6,31 @@ import (
 	"strings"
 )
 
-var (
-	errorOutOfRange = errors.New("text out of range")
-)
+var errorOutOfRange = errors.New("text out of range")
+
+func (p *AMParser) split(str string) []string {
+	matches := p.regex.FindAllStringIndex(str, -1)
+	var result []string
+	lastIndex := 0
+	for _, match := range matches {
+		if lastIndex < match[0] {
+			result = append(result, str[lastIndex:match[0]])
+		}
+
+		result = append(result, str[match[0]:match[1]])
+		lastIndex = match[1]
+	}
+
+	if lastIndex < len(str) {
+		result = append(result, str[lastIndex:])
+	}
+
+	return result
+}
 
 func (p *AMParser) parseAM(str string) (NodeAM, error) {
 	str = strings.Trim(str, " ")
-	texts := p.regex.FindAllString(str, -1)
+	texts := p.split(str)
 	if len(texts) == 0 {
 		return NodeAM{}, errors.New("invalid string")
 	}
@@ -25,7 +43,6 @@ func (p *AMParser) parseAM(str string) (NodeAM, error) {
 			Tag:  paragraph,
 		}, nil
 	}
-
 	for i, t := range texts {
 		if len(t) < 3 {
 			continue
