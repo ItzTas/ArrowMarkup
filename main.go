@@ -1,11 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+)
 
 func main() {
-	text := `This is a header <-Header-`
-	parser := NewAmParser()
+	text := ".class.< testclass anotherclass > .href.< testLink >"
+	regex := regexp.MustCompile(`\.(\w+)\.<([^>]+)>`)
 
-	fmt.Println(parser.parseAM(text))
-
+	matches := regex.FindAllString(text, -1)
+	fmt.Println(parseAttributes(matches))
 }
