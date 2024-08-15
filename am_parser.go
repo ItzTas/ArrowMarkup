@@ -27,12 +27,15 @@ func (p *AMParser) parseAM(str string) (NodeAM, error) {
 	}
 
 	for i, t := range texts {
-		if t[0] == '-' && t[len(t)-2:] == "->" && len(t) >= 3 {
+		if len(t) < 3 {
+			continue
+		}
+		if t[0] == '-' && t[len(t)-2:] == "->" {
 			if i+1 == len(texts) {
 				return NodeAM{}, errorOutOfRange
 			}
 			tag := parseTag(t)
-			attributes, err := getAtributes(t)
+			attributes, err := getAttributes(t)
 			if err != nil {
 				return NodeAM{}, err
 			}
@@ -42,12 +45,12 @@ func (p *AMParser) parseAM(str string) (NodeAM, error) {
 				Attributes: attributes,
 			}, nil
 		}
-		if t[:2] == "<-" && len(t) >= 3 {
+		if t[:2] == "<-" {
 			if i-1 < 0 {
 				return NodeAM{}, errorOutOfRange
 			}
 			tag := parseTag(t)
-			attributes, err := getAtributes(t)
+			attributes, err := getAttributes(t)
 			if err != nil {
 				return NodeAM{}, err
 			}
@@ -64,7 +67,7 @@ func (p *AMParser) parseAM(str string) (NodeAM, error) {
 	}, nil
 }
 
-func getAtributes(str string) (map[string]Attribute, error) {
+func getAttributes(str string) (map[string]Attribute, error) {
 	str = strings.Trim(str, " ")
 	var s string
 	if str[0] == '<' {

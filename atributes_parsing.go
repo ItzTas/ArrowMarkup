@@ -30,6 +30,9 @@ func parseAttribute(str string) (string, []string, error) {
 	}
 
 	attr := strings.Trim(attributes[0], "< >")
+	if attr == "" {
+		return "", nil, errorNotExist
+	}
 	attributes = strings.Split(attr, " ")
 
 	return attrType, attributes, nil
@@ -41,15 +44,15 @@ func parseAttributes(attributesStr []string) (map[string]Attribute, error) {
 	}
 	attrParsed := map[string]Attribute{}
 	for _, attr := range attributesStr {
-		tag, attributes, err := parseAttribute(attr)
+		attrType, attributes, err := parseAttribute(attr)
 		if err != nil {
 			return nil, err
 		}
-		attribute, err := defineAttributeTagAndValue(tag, attributes)
+		values, err := defineAttributeTagAndValue(attrType, attributes)
 		if err != nil {
 			return nil, err
 		}
-		attrParsed[tag] = attribute
+		attrParsed[attrType] = values
 	}
 	return attrParsed, nil
 }
