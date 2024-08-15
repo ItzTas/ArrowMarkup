@@ -10,12 +10,24 @@ const (
 	mapping
 )
 
-var attributesWithSlices = map[string]struct{}{
-	"class": {},
+var attributesWithSlices = map[string]string{
+	"class": "class",
 }
 
-var attributesWithSingleValue = map[string]struct{}{
-	"href": {},
+var attributesWithSingleValue = map[string]string{
+	"href": "href",
+}
+
+var amTagValInHTMl = map[string]string{
+	"hd":  "h1",
+	"h2d": "h2",
+	"h3d": "h3",
+	"h4d": "h4",
+	"h5d": "h5",
+	"h6d": "h6",
+
+	"lik":       "a",
+	"paragraph": "p",
 }
 
 const (
@@ -42,6 +54,6 @@ type AMParser struct {
 
 func NewAmParser() *AMParser {
 	return &AMParser{
-		regex: regexp.MustCompile(`(<-\w+-)|(-\w+->)|([^<>-]+)`),
+		regex: regexp.MustCompile(`(<-.*-)|(-.*->)`),
 	}
 }
