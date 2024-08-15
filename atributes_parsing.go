@@ -7,9 +7,7 @@ import (
 	"strings"
 )
 
-var (
-	errorNotExist = errors.New("given attrybute type or atribute does not exists")
-)
+var errorNotExist = errors.New("given attribute does not exist")
 
 func parseAttribute(str string) (string, []string, error) {
 	tagre := regexp.MustCompile(`\.(.*?)\.`)
