@@ -28,13 +28,13 @@ func (a *Attribute) toHTML() (string, error) {
 	case single:
 		htmlAttrtype, ok := attributesWithSingleValue[a.TypeAttr]
 		if !ok {
-			return "", fmt.Errorf("%v, with attribute type: %v", errorNotExist, a.TypeAttr)
+			return "", fmt.Errorf("%v, with attribute single type: %v", errorNotExist, a.TypeAttr)
 		}
 		return fmt.Sprintf("%v=\"%v\"", htmlAttrtype, a.ValueAttr), nil
 	case list:
 		htmlAttrtype, ok := attributesWithSlices[a.TypeAttr]
 		if !ok {
-			return "", fmt.Errorf("%v, with attribute type: %v", errorNotExist, a.TypeAttr)
+			return "", fmt.Errorf("%v, with attribute list type: %v", errorNotExist, a.TypeAttr)
 		}
 		var valuesStr string
 		for _, v := range a.ListAttr {
