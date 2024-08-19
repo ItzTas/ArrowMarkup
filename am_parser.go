@@ -28,6 +28,20 @@ func (p *AMParser) split(str string) []string {
 	return result
 }
 
+func (p *AMParser) parseAMs(str string) ([]NodeAM, error) {
+	amsUnparsed := strings.Split(str, "\n")
+	amsUnparsed = purgeEmptyStrFromSlice(amsUnparsed)
+	ams := []NodeAM{}
+	for _, a := range amsUnparsed {
+		am, err := p.parseAM(a)
+		if err != nil {
+			return nil, err
+		}
+		ams = append(ams, am)
+	}
+	return ams, nil
+}
+
 func (p *AMParser) parseAM(str string) (NodeAM, error) {
 	str = strings.Trim(str, " ")
 	texts := p.split(str)
