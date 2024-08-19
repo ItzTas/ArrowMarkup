@@ -1,6 +1,8 @@
 package main
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type metaAttrTypes int
 
@@ -9,6 +11,12 @@ const (
 	list
 	mapping
 )
+
+type HTMLFile struct {
+	filepath string
+	fileName string
+	content  string
+}
 
 var attributesWithSlices = map[string]string{
 	"class": "class",
